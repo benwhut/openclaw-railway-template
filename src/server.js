@@ -2013,7 +2013,6 @@ app.get("/setup/export", requireSetupAuth, async (_req, res) => {
 // Proxy everything else to the gateway.
 const proxy = httpProxy.createProxyServer({
   target: GATEWAY_TARGET,
-  ws: true,
   xfwd: true,
 });
 
@@ -2133,7 +2132,6 @@ const server = app.listen(PORT, async () => {
 const VNC_TARGET = "http://127.0.0.1:6080";
 const vncProxy = httpProxy.createProxyServer({
   target: VNC_TARGET,
-  ws: true,
 });
 
 vncProxy.on("error", (err, req, res) => {
