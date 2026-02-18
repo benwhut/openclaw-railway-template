@@ -2174,18 +2174,6 @@ server.on("upgrade", async (req, socket, head) => {
       Authorization: `Bearer ${OPENCLAW_GATEWAY_TOKEN}`,
     },
   });
-});
-
-  // Inject auth token via headers option (req.headers modification doesn't work for WS)
-  debug(`[ws-upgrade] Proxying WebSocket upgrade with token: ${OPENCLAW_GATEWAY_TOKEN.slice(0, 16)}...`);
-
-  proxy.ws(req, socket, head, {
-    target: GATEWAY_TARGET,
-    headers: {
-      Authorization: `Bearer ${OPENCLAW_GATEWAY_TOKEN}`,
-    },
-  });
-});
 
 // Graceful shutdown handler for Railway deployments
 process.on("SIGTERM", async () => {
