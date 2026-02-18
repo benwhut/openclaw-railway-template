@@ -2174,6 +2174,7 @@ server.on("upgrade", async (req, socket, head) => {
       Authorization: `Bearer ${OPENCLAW_GATEWAY_TOKEN}`,
     },
   });
+});
 
 // Graceful shutdown handler for Railway deployments
 process.on("SIGTERM", async () => {
