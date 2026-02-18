@@ -103,5 +103,4 @@ COPY src ./src
 ENV PORT=8080
 ENV DISPLAY=:99
 EXPOSE 8080
-EXPOSE 6080
 CMD ["bash", "-c", "Xvfb :99 -screen 0 1920x1080x24 & x11vnc -display :99 -nopw -listen localhost -forever > /dev/null 2>&1 & websockify 6080 localhost:5900 > /dev/null 2>&1 & node src/server.js"]
