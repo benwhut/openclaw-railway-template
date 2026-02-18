@@ -2141,24 +2141,19 @@ vncProxy.on("error", (err, req, socket) => {
   }
 });
 
-// Handle WebSocket upgrades — intercept /vnc before gateway proxy can grab it.
-// We override proxy.ws to route /vnc to websockify, since http-proxy may auto-attach
-// its own upgrade listener that fires before server.on("upgrade").
-const _originalProxyWs = proxy.ws.bind(proxy);
-proxy.ws = function (req, socket, head, options) {
+// Handle WebSocket upgrades.
+// Use prependListener to ensure VNC routing fires before any http-proxy auto-listener.
+server.prependListener("upgrade", (req, socket, head) => {
   if (req.url === "/vnc" || req.url.startsWith("/vnc?") || req.url.startsWith("/vnc/")) {
-    console.log("[vnc-proxy] Intercepting /vnc, routing to websockify");
+    console.log("[vnc-proxy] Routing /vnc to websockify");
+    req._vncHandled = true;
     vncProxy.ws(req, socket, head, { target: VNC_TARGET });
-    return;
   }
-  return _originalProxyWs(req, socket, head, options);
-};
+});
 
 server.on("upgrade", async (req, socket, head) => {
-  // /vnc is handled by the proxy.ws override above
-  if (req.url === "/vnc" || req.url.startsWith("/vnc?") || req.url.startsWith("/vnc/")) {
-    return; // Already handled
-  }
+  // Skip if already handled by VNC listener above
+  if (req._vncHandled) return;
 
   if (!isConfigured()) {
     socket.destroy();
