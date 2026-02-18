@@ -8,7 +8,7 @@ import express from "express";
 import httpProxy from "http-proxy";
 import * as tar from "tar";
 
-// ========== ENVIRONMENT VARIABLE MIGRATION ==========
+// ========== ENVIRONMENT VARIABLE MIGRATION ========== #
 // Auto-migrate legacy CLAWDBOT_* and MOLTBOT_* env vars to OPENCLAW_* for backward compatibility.
 // This ensures existing Railway deployments continue working after the rename.
 const ENV_MIGRATIONS = [
