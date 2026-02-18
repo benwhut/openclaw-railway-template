@@ -2129,6 +2129,23 @@ const server = app.listen(PORT, async () => {
   }
 });
 
+// VNC proxy for LiveStream (websockify on localhost:6080)
+const VNC_TARGET = "http://127.0.0.1:6080";
+const vncProxy = httpProxy.createProxyServer({
+  target: VNC_TARGET,
+  ws: true,
+});
+
+vncProxy.on("error", (err, req, res) => {
+  console.error("[vnc-proxy] error:", err.message);
+  if (res && !res.headersSent) {
+    try {
+      res.writeHead(502, { "Content-Type": "text/plain" });
+      res.end("VNC proxy error: " + err.message);
+    } catch {}
+  }
+});
+
 // Handle WebSocket upgrades
 server.on("upgrade", async (req, socket, head) => {
   if (!isConfigured()) {
