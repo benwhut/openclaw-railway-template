@@ -2134,13 +2134,10 @@ const vncProxy = httpProxy.createProxyServer({
   target: VNC_TARGET,
 });
 
-vncProxy.on("error", (err, req, res) => {
+vncProxy.on("error", (err, req, socket) => {
   console.error("[vnc-proxy] error:", err.message);
-  if (res && !res.headersSent) {
-    try {
-      res.writeHead(502, { "Content-Type": "text/plain" });
-      res.end("VNC proxy error: " + err.message);
-    } catch {}
+  if (socket && typeof socket.destroy === "function") {
+    socket.destroy();
   }
 });
 
@@ -2148,7 +2145,7 @@ vncProxy.on("error", (err, req, res) => {
 server.on("upgrade", async (req, socket, head) => {
   // Route /vnc WebSocket upgrades to websockify (no auth needed)
   if (req.url === "/vnc" || req.url.startsWith("/vnc?")) {
-    debug("[ws-upgrade] Routing to VNC proxy (websockify)");
+    console.log("[vnc-proxy] Routing WebSocket upgrade to websockify");
     vncProxy.ws(req, socket, head, { target: VNC_TARGET });
     return;
   }
