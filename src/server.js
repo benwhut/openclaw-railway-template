@@ -2148,6 +2148,13 @@ vncProxy.on("error", (err, req, res) => {
 
 // Handle WebSocket upgrades
 server.on("upgrade", async (req, socket, head) => {
+  // Route /vnc WebSocket upgrades to websockify (no auth needed)
+  if (req.url === "/vnc" || req.url.startsWith("/vnc?")) {
+    debug("[ws-upgrade] Routing to VNC proxy (websockify)");
+    vncProxy.ws(req, socket, head, { target: VNC_TARGET });
+    return;
+  }
+
   if (!isConfigured()) {
     socket.destroy();
     return;
@@ -2158,6 +2165,16 @@ server.on("upgrade", async (req, socket, head) => {
     socket.destroy();
     return;
   }
+
+  debug(`[ws-upgrade] Proxying WebSocket upgrade with token: ${OPENCLAW_GATEWAY_TOKEN.slice(0, 16)}...`);
+
+  proxy.ws(req, socket, head, {
+    target: GATEWAY_TARGET,
+    headers: {
+      Authorization: `Bearer ${OPENCLAW_GATEWAY_TOKEN}`,
+    },
+  });
+});
 
   // Inject auth token via headers option (req.headers modification doesn't work for WS)
   debug(`[ws-upgrade] Proxying WebSocket upgrade with token: ${OPENCLAW_GATEWAY_TOKEN.slice(0, 16)}...`);
