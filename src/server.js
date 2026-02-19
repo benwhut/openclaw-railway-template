@@ -1023,6 +1023,12 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.enabled", "true"]),
       );
+      // Point to the Playwright Chromium binary symlinked to /usr/bin/chromium in Dockerfile.
+      // OpenClaw's browser discovery only checks hardcoded system paths; this ensures it finds it.
+      await runCmd(
+        OPENCLAW_NODE,
+        clawArgs(["config", "set", "browser.executablePath", "/usr/bin/chromium"]),
+      );
       // Chromium cannot use its sandbox inside Docker containers
       await runCmd(
         OPENCLAW_NODE,

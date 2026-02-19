@@ -125,6 +125,16 @@ RUN node /openclaw/node_modules/playwright-core/cli.js install chromium \
   || node /openclaw/node_modules/playwright/cli.js install chromium \
   || echo "WARNING: Playwright CLI not found in openclaw build, browser tool may not work"
 
+# OpenClaw's browser tool looks for browsers at hardcoded paths like /usr/bin/chromium.
+# Playwright installs Chromium elsewhere, so create a symlink so OpenClaw can find it.
+RUN CHROME_BIN=$(find /opt/pw-browsers -name "chrome" -type f 2>/dev/null | head -1) \
+  && if [ -n "$CHROME_BIN" ]; then \
+    ln -sf "$CHROME_BIN" /usr/bin/chromium \
+    && echo "Symlinked $CHROME_BIN -> /usr/bin/chromium"; \
+  else \
+    echo "WARNING: Playwright Chromium binary not found, browser tool may not work"; \
+  fi
+
 COPY src ./src
 
 ENV PORT=8080
