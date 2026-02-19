@@ -70,6 +70,25 @@ RUN apt-get update \
     xvfb \
     x11vnc \
     websockify \
+    # Playwright/Chromium system dependencies
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libasound2 \
+    libwayland-client0 \
   && rm -rf /var/lib/apt/lists/*
 
 # Install Homebrew (must run as non-root user)
@@ -97,6 +116,13 @@ COPY --from=openclaw-build /openclaw /openclaw
 # Provide a openclaw executable
 RUN printf '%s\n' '#!/usr/bin/env bash' 'exec node /openclaw/dist/entry.js "$@"' > /usr/local/bin/openclaw \
   && chmod +x /usr/local/bin/openclaw
+
+# Install Playwright Chromium for OpenClaw browser tool.
+# Use the bundled CLI (not npx) to avoid npm conflicts per OpenClaw docs.
+ENV PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers
+RUN node /openclaw/node_modules/playwright-core/cli.js install chromium \
+  || node /openclaw/node_modules/playwright/cli.js install chromium \
+  || echo "WARNING: Playwright CLI not found in openclaw build, browser tool may not work"
 
 COPY src ./src
 

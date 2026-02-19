@@ -1010,6 +1010,12 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
         clawArgs(["config", "set", "gateway.controlUi.allowInsecureAuth", "true"]),
       );
 
+      // Enable OpenClaw-managed browser tool (Playwright + Chromium installed in Dockerfile)
+      await runCmd(
+        OPENCLAW_NODE,
+        clawArgs(["config", "set", "browser.enabled", "true"]),
+      );
+
       // Configure trusted proxies for gateway (based on PR #12 by ArtificialSight)
       // - Auto-detects Railway environment via env vars
       // - Security enhancement: Trust localhost only (not 0.0.0.0/0) since wrapper proxies all traffic
