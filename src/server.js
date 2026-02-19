@@ -360,31 +360,13 @@ async function startGateway() {
   fs.mkdirSync(STATE_DIR, { recursive: true });
   fs.mkdirSync(WORKSPACE_DIR, { recursive: true });
 
-  // Ensure gateway.mode is "remote" so any subprocess spawned by the gateway
-  // (e.g. the browser tool) connects to the already-running gateway instead of
-  // trying to start a new one. The wrapper manages the gateway lifecycle explicitly.
+  // Ensure gateway.mode is "local" so the gateway can start.
+  // Also set gateway.remote config so subprocesses (e.g. browser tool) can
+  // find and connect to the already-running gateway without starting a new one.
   console.log(`[gateway] ========== GATEWAY START CONFIG SYNC ==========`);
   await runCmd(
     OPENCLAW_NODE,
-    clawArgs(["config", "set", "gateway.mode", "remote"]),
-  );
-  await runCmd(
-    OPENCLAW_NODE,
-    clawArgs([
-      "config",
-      "set",
-      "gateway.remote.url",
-      `ws://127.0.0.1:${INTERNAL_GATEWAY_PORT}`,
-    ]),
-  );
-  await runCmd(
-    OPENCLAW_NODE,
-    clawArgs([
-      "config",
-      "set",
-      "gateway.remote.token",
-      OPENCLAW_GATEWAY_TOKEN,
-    ]),
+    clawArgs(["config", "set", "gateway.mode", "local"]),
   );
 
   // Sync wrapper token to openclaw.json before every gateway start.
@@ -960,28 +942,7 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
       console.log(`[onboard] Now syncing wrapper token to config`);
       debug(`[onboard] Token preview: ${OPENCLAW_GATEWAY_TOKEN.slice(0, 8)}...`);
 
-      // Use "remote" mode so any subprocess spawned by the gateway (e.g. the browser
-      // tool) connects to the already-running gateway instead of trying to start a new one.
-      // The wrapper manages the gateway lifecycle explicitly via `gateway run` CLI args.
-      await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.mode", "remote"]));
-      await runCmd(
-        OPENCLAW_NODE,
-        clawArgs([
-          "config",
-          "set",
-          "gateway.remote.url",
-          `ws://127.0.0.1:${INTERNAL_GATEWAY_PORT}`,
-        ]),
-      );
-      await runCmd(
-        OPENCLAW_NODE,
-        clawArgs([
-          "config",
-          "set",
-          "gateway.remote.token",
-          OPENCLAW_GATEWAY_TOKEN,
-        ]),
-      );
+      await runCmd(OPENCLAW_NODE, clawArgs(["config", "set", "gateway.mode", "local"]));
       await runCmd(
         OPENCLAW_NODE,
         clawArgs(["config", "set", "gateway.auth.mode", "token"]),
