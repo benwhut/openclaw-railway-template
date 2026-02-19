@@ -1015,6 +1015,16 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.enabled", "true"]),
       );
+      // Chromium cannot use its sandbox inside Docker containers
+      await runCmd(
+        OPENCLAW_NODE,
+        clawArgs(["config", "set", "browser.noSandbox", "true"]),
+      );
+      // Run headless for reliability in containerized environments
+      await runCmd(
+        OPENCLAW_NODE,
+        clawArgs(["config", "set", "browser.headless", "true"]),
+      );
 
       // Configure trusted proxies for gateway (based on PR #12 by ArtificialSight)
       // - Auto-detects Railway environment via env vars

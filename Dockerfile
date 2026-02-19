@@ -67,6 +67,7 @@ RUN apt-get update \
     python3 \
     pkg-config \
     sudo \
+    lsof \
     xvfb \
     x11vnc \
     websockify \
