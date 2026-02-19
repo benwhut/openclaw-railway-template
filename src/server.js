@@ -1018,23 +1018,28 @@ app.post("/setup/api/run", requireSetupAuth, async (req, res) => {
         clawArgs(["config", "set", "gateway.controlUi.allowInsecureAuth", "true"]),
       );
 
-      // Enable OpenClaw-managed browser tool (Playwright + Chromium installed in Dockerfile)
+      // Enable OpenClaw-managed browser tool (Playwright Chromium installed in Dockerfile).
+      // - defaultProfile "openclaw" uses the managed isolated Chromium instance
+      //   (the default "chrome" profile tries the Chrome extension relay which doesn't exist here)
+      // - executablePath points to Playwright Chromium symlinked to /usr/bin/chromium
+      // - noSandbox required for Chromium in Docker containers
+      // - headless for server environments without a real display
       await runCmd(
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.enabled", "true"]),
       );
-      // Point to the Playwright Chromium binary symlinked to /usr/bin/chromium in Dockerfile.
-      // OpenClaw's browser discovery only checks hardcoded system paths; this ensures it finds it.
+      await runCmd(
+        OPENCLAW_NODE,
+        clawArgs(["config", "set", "browser.defaultProfile", "openclaw"]),
+      );
       await runCmd(
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.executablePath", "/usr/bin/chromium"]),
       );
-      // Chromium cannot use its sandbox inside Docker containers
       await runCmd(
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.noSandbox", "true"]),
       );
-      // Run headless for reliability in containerized environments
       await runCmd(
         OPENCLAW_NODE,
         clawArgs(["config", "set", "browser.headless", "true"]),
